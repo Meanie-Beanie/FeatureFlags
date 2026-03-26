@@ -1,5 +1,5 @@
 ﻿using Client;
 
 App app = new App();
-app.RunAsync();
+await app.RunAsync();
 

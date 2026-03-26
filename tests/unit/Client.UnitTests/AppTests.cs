@@ -31,10 +31,10 @@ public class AppTests
         App app = new App();
 
         // Act
-        await app.RunAsync();
+        var returnCode = await app.RunAsync();
 
         // Assert
         // If program gets here without throwing errors, we know that it has started.
-        Assert.True(true);
+        Assert.Equal(0, returnCode);
     }
 }
