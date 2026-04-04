@@ -1,5 +1,11 @@
 ﻿using Client;
+using Client.Interfaces;
+using Client.Services.FeatureFlagService;
+using Client.Services.UserInterface;
 
-App app = new App();
+IUserInterface userInterface = new ConsoleInterface();
+IFeatureFlagService featureFlagService = new FeatureFlagService();
+
+App app = new App(userInterface, featureFlagService);
 await app.RunAsync();
 
