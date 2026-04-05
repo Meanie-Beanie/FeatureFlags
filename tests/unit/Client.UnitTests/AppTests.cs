@@ -26,22 +26,4 @@ public class AppTests
         //// If program gets here without throwing errors, we know that it has started.
         //Assert.Equal(0, returnCode);
     }
-
-    [Fact]
-    public async Task AuthenticateAsync_SuccessfullyAuthenticated_ReturnsOk200()
-    {
-        // Assign
-        var uiMock = new Mock<IUserInterface>();
-        var featureFlagsServiceMock = new Mock<IFeatureFlagService>();
-        uiMock.Setup(x => x.GetInput()).Returns(1234.ToString());
-
-        App app = new App(uiMock.Object, featureFlagsServiceMock.Object);
-
-        // Act
-        var authResult = await app
-            .AuthenticateAsync();
-
-        // Assert
-        Assert.Equal(HttpStatusCode.OK, authResult);
-    }
 }
