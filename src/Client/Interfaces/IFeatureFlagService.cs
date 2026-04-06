@@ -4,5 +4,5 @@ namespace Client.Interfaces;
 
 public interface IFeatureFlagService
 {
-    public AuthResponse Authenticate();
+    public Task<AuthResponse> GetFeatureFlags(string apiKey);
 }

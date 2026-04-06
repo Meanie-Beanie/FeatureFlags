@@ -1,6 +1,6 @@
 ﻿using Client;
 using Client.Interfaces;
-using Client.Services.FeatureFlagService;
+using Client.Services.FeatureFlag;
 using Client.Services.UserInterface;
 
 IUserInterface userInterface = new ConsoleInterface();
