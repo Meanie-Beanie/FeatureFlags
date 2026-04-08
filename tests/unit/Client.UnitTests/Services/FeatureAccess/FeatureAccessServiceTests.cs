@@ -29,7 +29,7 @@ public class FeatureAccessServiceTests
 
         // Act
         var authResult = await authenticationService
-            .RequestAccessAsync();
+            .RequestAccessAsync(It.IsAny<string>());
 
         // Assert
         Assert.Same(expected, authResult);
