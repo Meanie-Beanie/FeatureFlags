@@ -28,11 +28,11 @@ public class FeatureAccessServiceTests
         var authenticationService = new FeatureAccessService(featureFlagServiceMock.Object);
 
         // Act
-        var authResult = await authenticationService
+        var result = await authenticationService
             .RequestAccessAsync(It.IsAny<string>());
 
         // Assert
-        Assert.Same(expected, authResult);
+        Assert.Same(expected, result);
         featureFlagServiceMock.Verify(x => x.GetFeatureFlags(It.IsAny<string>()), Times.Once());
     }
 }
