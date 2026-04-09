@@ -11,7 +11,7 @@ using Client.Interfaces;
 using Client.Entities;
 
 
-namespace Client.UnitTests.Services.FeatureAccess;
+namespace Client.UnitTests.Services;
 
 public class FeatureAccessServiceTests
 {
