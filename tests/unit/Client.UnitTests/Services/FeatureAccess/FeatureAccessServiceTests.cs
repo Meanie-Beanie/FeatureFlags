@@ -1,5 +1,4 @@
-﻿
-using Moq;
+﻿using Moq;
 using Shared.Responses;
 using System;
 using System.Collections.Generic;
@@ -9,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Client.Services;
 using Client.Interfaces;
-using Client.Services.FeatureAccess;
+using Client.Entities;
 
 
 namespace Client.UnitTests.Services.FeatureAccess;
@@ -19,16 +18,16 @@ public class FeatureAccessServiceTests
     [Fact]
     public async Task RequestAccess_ValidRequest_ReturnsAuthResultFromFeatureFlagService()
     {
-        // Assign
+        // Assign;
         var expected = new AuthResponse();
         var featureFlagServiceMock = new Mock<IFeatureFlagService>();
         featureFlagServiceMock.Setup(x => x.GetFeatureFlags(It.IsAny<string>()))
                 .ReturnsAsync(expected);
 
-        var authenticationService = new FeatureAccessService(featureFlagServiceMock.Object);
+        var featureAccessService = new FeatureAccessService(featureFlagServiceMock.Object);
 
         // Act
-        var result = await authenticationService
+        var result = await featureAccessService
             .RequestAccessAsync(It.IsAny<string>());
 
         // Assert

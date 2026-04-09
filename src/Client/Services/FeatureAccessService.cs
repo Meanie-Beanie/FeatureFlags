@@ -1,12 +1,7 @@
 ﻿using Client.Interfaces;
 using Shared.Responses;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Client.Services.FeatureAccess;
+namespace Client.Services;
 
 public class FeatureAccessService : IFeatureAccessService
 {
@@ -17,8 +12,8 @@ public class FeatureAccessService : IFeatureAccessService
         _featureFlagService = featureFlagService;
     }
 
-    public async Task<AuthResponse> RequestAccessAsync()
+    public Task<AuthResponse> RequestAccessAsync(string apiKey)
     {
-        return new AuthResponse();
+        return _featureFlagService.GetFeatureFlags(apiKey);
     }
 }

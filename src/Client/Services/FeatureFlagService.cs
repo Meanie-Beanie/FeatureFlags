@@ -1,7 +1,7 @@
 ﻿using Client.Interfaces;
 using Shared.Responses;
 
-namespace Client.Services.FeatureFlag;
+namespace Client.Services;
 
 public class FeatureFlagService : IFeatureFlagService
 {
