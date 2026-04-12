@@ -1,14 +1,17 @@
-﻿using Moq;
+﻿using Client.Entities;
+using Client.Interfaces;
+using Client.Services;
+using Moq;
+using Shared.Contracts;
 using Shared.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Runtime.Intrinsics.X86;
 using System.Text;
 using System.Threading.Tasks;
-using Client.Services;
-using Client.Interfaces;
-using Client.Entities;
+using System.Xml.Linq;
 
 
 namespace Client.UnitTests.Services;
@@ -16,22 +19,138 @@ namespace Client.UnitTests.Services;
 public class FeatureAccessServiceTests
 {
     [Fact]
-    public async Task RequestAccess_ValidRequest_ReturnsAuthResultFromFeatureFlagService()
+    public async Task RequestAccess_ValidRequest_ReturnsFeatureAccess()
     {
         // Assign;
-        var expected = new AuthResponse();
+        List<FeatureFlag> features = CreateFeatures();
+        AuthResponse authResponse = CreateAuthResponse(true, HttpStatusCode.OK, null, features);
+
+        string apiKeyFake = "test-key";
+
         var featureFlagServiceMock = new Mock<IFeatureFlagService>();
         featureFlagServiceMock.Setup(x => x.GetFeatureFlags(It.IsAny<string>()))
-                .ReturnsAsync(expected);
+                .ReturnsAsync(authResponse);
 
         var featureAccessService = new FeatureAccessService(featureFlagServiceMock.Object);
 
         // Act
         var result = await featureAccessService
-            .RequestAccessAsync(It.IsAny<string>());
+            .RequestAccessAsync(apiKeyFake);
 
         // Assert
-        Assert.Same(expected, result);
-        featureFlagServiceMock.Verify(x => x.GetFeatureFlags(It.IsAny<string>()), Times.Once());
+        Assert.NotNull(result.Features);
+        Assert.True(result.IsAuthorized);
+        Assert.Equal(features.Count, result.Features.Count);
+        features.All(x => result.Features.Contains(x.Name));
+        featureFlagServiceMock.Verify(x => x.GetFeatureFlags(apiKeyFake), Times.Once());
+    }
+
+    [Fact]
+    public async Task RequestAccess_InvalidAPIKeyGiven_ReturnsNoAccessWithErrorMessage()
+    {
+        // Assign;
+        AuthResponse authResponse = CreateAuthResponse(false, HttpStatusCode.Unauthorized, "Invalid API key.", features: new());
+        string apiKeyFake = "test-key";
+
+        var featureFlagServiceMock = new Mock<IFeatureFlagService>();
+        featureFlagServiceMock.Setup(x => x.GetFeatureFlags(It.IsAny<string>()))
+                .ReturnsAsync(authResponse);
+
+        var featureAccessService = new FeatureAccessService(featureFlagServiceMock.Object);
+
+        // Act
+        var result = await featureAccessService
+            .RequestAccessAsync(apiKeyFake);
+
+        // Assert
+        Assert.False(result.IsAuthorized);
+        featureFlagServiceMock.Verify(x => x.GetFeatureFlags(apiKeyFake), Times.Once());
+        Assert.False(string.IsNullOrEmpty(result.ErrorMessage)); // Not finalized
+    }
+
+    [Fact]
+    public void HasAccess_UserIsNotAuthorized_ThrowsInvalidOperationError()
+    {
+        // Assign
+        string testFeatureName = "Test1-Feature";
+        var featureFlagServiceMock = new Mock<IFeatureFlagService>();
+        var featureAccessService = new FeatureAccessService(featureFlagServiceMock.Object);
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => featureAccessService.HasFeature(testFeatureName));
+    }
+
+    [Fact]
+    public async Task HasAccess_EnabledFeatureIsFound_ReturnsTrue()
+    {
+        // Assign
+        string testFeatureName = "Test1-Feature";
+        List<FeatureFlag> features = new() { new() { Name = testFeatureName } };
+        AuthResponse authResponse = CreateAuthResponse(true, HttpStatusCode.OK, null, features);
+
+        string apiKeyFake = "test-key";
+
+        var featureFlagServiceMock = new Mock<IFeatureFlagService>();
+        featureFlagServiceMock.Setup(x => x.GetFeatureFlags(It.IsAny<string>()))
+                .ReturnsAsync(authResponse);
+
+        var featureAccessService = new FeatureAccessService(featureFlagServiceMock.Object);
+
+
+        // Act
+        await featureAccessService.RequestAccessAsync(apiKeyFake); //Authorizes the user and sets up the enabled features
+        var result = featureAccessService.HasFeature(testFeatureName);
+
+        // Assert
+        Assert.True(result);
+        featureFlagServiceMock.Verify(x => x.GetFeatureFlags(apiKeyFake), Times.Once());
+    }
+
+    [Fact]
+    public async Task HasAccess_NoEnabledFeatureFound_ReturnsFalse()
+    {
+        // Assign
+        string NonExistingFeatureName = "Non-existing-Feature";
+        List<FeatureFlag> features = new(); // Empty featurelist
+        AuthResponse authResponse = CreateAuthResponse(true, HttpStatusCode.OK, null, features);
+
+        string apiKeyFake = "test-key";
+
+        var featureFlagServiceMock = new Mock<IFeatureFlagService>();
+        featureFlagServiceMock.Setup(x => x.GetFeatureFlags(It.IsAny<string>()))
+                .ReturnsAsync(authResponse);
+
+        var featureAccessService = new FeatureAccessService(featureFlagServiceMock.Object);
+
+
+        // Act
+        await featureAccessService.RequestAccessAsync(apiKeyFake); //Authorizes the user and sets up the enabled features
+        var result = featureAccessService.HasFeature(NonExistingFeatureName);
+
+        // Assert
+        Assert.False(result);
+        featureFlagServiceMock.Verify(x => x.GetFeatureFlags(apiKeyFake), Times.Once());
+    }
+
+    private AuthResponse CreateAuthResponse(bool IsAuthorized, HttpStatusCode statusCode, string? errorMessage, List<FeatureFlag> features)
+    {
+        return new()
+        {
+            IsAuthorized = IsAuthorized,
+            StatusCode = statusCode,
+            ErrorMessage = errorMessage,
+            Features = features ?? new List<FeatureFlag>()
+        };
+    }
+
+    private static List<FeatureFlag> CreateFeatures()
+    {
+        List<FeatureFlag> features = new()
+        {
+            new FeatureFlag { Name = "Device1" },
+            new FeatureFlag { Name = "Device2" }
+        };
+
+        return features;
     }
 }

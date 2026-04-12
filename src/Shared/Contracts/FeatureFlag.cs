@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Shared.Contracts;
-public class FeatureFlags
+public sealed class FeatureFlag
 {
-
+    public required string Name { get; set; }
 }

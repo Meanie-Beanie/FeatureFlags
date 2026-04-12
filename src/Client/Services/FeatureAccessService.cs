@@ -1,4 +1,6 @@
-﻿using Client.Interfaces;
+﻿using Client.Entities;
+using Client.Interfaces;
+using Shared.Contracts;
 using Shared.Responses;
 
 namespace Client.Services;
@@ -7,13 +9,50 @@ public class FeatureAccessService : IFeatureAccessService
 {
     private readonly IFeatureFlagService _featureFlagService;
 
+    private List<string> EnabledFeatures = new();
+    private bool IsUserAuthorized = false;
+
     public FeatureAccessService(IFeatureFlagService featureFlagService)
     {
         _featureFlagService = featureFlagService;
     }
 
-    public Task<AuthResponse> RequestAccessAsync(string apiKey)
+    public bool HasFeature(string featureName)
     {
-        return _featureFlagService.GetFeatureFlags(apiKey);
+        if (!IsUserAuthorized)
+            throw new InvalidOperationException("User is not authorized.");
+
+        return EnabledFeatures.Contains(featureName);
+    }
+
+    public async Task<FeatureAccess> RequestAccessAsync(string apiKey)
+    {
+        var response = await _featureFlagService.GetFeatureFlags(apiKey);
+
+        if (!response.IsAuthorized)
+        {
+            UpdateUserFeatures(response.IsAuthorized, new());
+            return new() { IsAuthorized = false, ErrorMessage = "Invalid API key." };
+        }
+
+
+        // Convert Feature list into simplified string list.
+        var listOfFeatures = response.Features.Select(x => x.Name).ToList();
+
+        UpdateUserFeatures(response.IsAuthorized, listOfFeatures);
+
+        var featureAccess = new FeatureAccess()
+        {
+            IsAuthorized = response.IsAuthorized,
+            Features = listOfFeatures
+        };
+
+        return featureAccess;
+    }
+
+    private void UpdateUserFeatures(bool isAuthorized, List<string> enabledFeatures)
+    {
+        IsUserAuthorized = isAuthorized;
+        EnabledFeatures = enabledFeatures;
     }
 }

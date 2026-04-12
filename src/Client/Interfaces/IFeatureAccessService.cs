@@ -1,7 +1,11 @@
-﻿using Shared.Responses;
+﻿using Client.Entities;
+using Shared.Contracts;
+using Shared.Responses;
 
 namespace Client.Interfaces;
 public interface IFeatureAccessService
 {
-    public Task<AuthResponse> RequestAccessAsync(string apiKey);
+    public Task<FeatureAccess> RequestAccessAsync(string apiKey);
+
+    public bool HasFeature(string featureName);
 }
