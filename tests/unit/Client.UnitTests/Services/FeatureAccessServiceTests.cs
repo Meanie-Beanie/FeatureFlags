@@ -1,6 +1,7 @@
 ﻿using Client.Entities;
 using Client.Interfaces;
 using Client.Services;
+using Client.UnitTests.TestUtils;
 using Moq;
 using Shared.Contracts;
 using Shared.Responses;
@@ -16,13 +17,13 @@ using System.Xml.Linq;
 
 namespace Client.UnitTests.Services;
 
-public class FeatureAccessServiceTests
+public class FeatureAccessServiceTests : AuthResponseBuilder
 {
     [Fact]
     public async Task RequestAccess_ValidRequest_ReturnsFeatureAccess()
     {
         // Assign;
-        List<FeatureFlag> features = CreateFeatures();
+        List<FeatureFlag> features = FeatureFlagBuilder.CreateFeatures();
         AuthResponse authResponse = CreateAuthResponse(true, HttpStatusCode.OK, null, features);
 
         string apiKeyFake = "test-key";
@@ -41,7 +42,7 @@ public class FeatureAccessServiceTests
         Assert.NotNull(result.Features);
         Assert.True(result.IsAuthorized);
         Assert.Equal(features.Count, result.Features.Count);
-        features.All(x => result.Features.Contains(x.Name));
+        Assert.True(features.All(x => result.Features.Contains(x.Name)));
         featureFlagServiceMock.Verify(x => x.GetFeatureFlags(apiKeyFake), Times.Once());
     }
 
@@ -112,7 +113,7 @@ public class FeatureAccessServiceTests
         // Assign
         string NonExistingFeatureName = "Non-existing-Feature";
         List<FeatureFlag> features = new(); // Empty featurelist
-        AuthResponse authResponse = CreateAuthResponse(true, HttpStatusCode.OK, null, features);
+        AuthResponse authResponse = AuthResponseBuilder.CreateAuthResponse(true, HttpStatusCode.OK, null, features);
 
         string apiKeyFake = "test-key";
 
@@ -130,27 +131,5 @@ public class FeatureAccessServiceTests
         // Assert
         Assert.False(result);
         featureFlagServiceMock.Verify(x => x.GetFeatureFlags(apiKeyFake), Times.Once());
-    }
-
-    private AuthResponse CreateAuthResponse(bool IsAuthorized, HttpStatusCode statusCode, string? errorMessage, List<FeatureFlag> features)
-    {
-        return new()
-        {
-            IsAuthorized = IsAuthorized,
-            StatusCode = statusCode,
-            ErrorMessage = errorMessage,
-            Features = features ?? new List<FeatureFlag>()
-        };
-    }
-
-    private static List<FeatureFlag> CreateFeatures()
-    {
-        List<FeatureFlag> features = new()
-        {
-            new FeatureFlag { Name = "Device1" },
-            new FeatureFlag { Name = "Device2" }
-        };
-
-        return features;
     }
 }
