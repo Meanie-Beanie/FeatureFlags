@@ -1,13 +1,15 @@
 ﻿using Client.Services;
 using Client.UnitTests.TestUtils;
 using Moq;
+using RichardSzalay.MockHttp;
 using Shared.Responses;
+using Shared.Routes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using System.Net;
 
 namespace Client.UnitTests.Services;
 public class FeatureFlagServiceTests
@@ -15,19 +17,30 @@ public class FeatureFlagServiceTests
     [Fact]
     public async Task GetFeatureFlags_APIReturnsWithAuthorizedFeatures_ReturnsAuthResponse()
     {
-        var testApiKey = "testuri";
+        var baseUrl = new Uri("https://www.test.com");
+        var featureUrl = baseUrl + ApiRoutes.Features.Base;
+        var testApiKey = "test-Api-Key";
+
         var features = FeatureFlagBuilder.CreateFeatures();
-        var authResponse = AuthResponseBuilder.CreateAuthResponse(true, HttpStatusCode.OK, null, features);
+        var authResponseJson = AuthResponseBuilder.CreateJsonAuthResponse(true, HttpStatusCode.OK, null, features);
 
-        var httpClientMock = new Mock<HttpClient>();
-        httpClientMock.Setup(x => x.GetAsync(testApiKey));
+        var mockHttp = new MockHttpMessageHandler();
 
-        var featureFlagService = new FeatureFlagService(httpClientMock.Object);
-        var result = await featureFlagService.GetFeatureFlags(testApiKey);
+        mockHttp.Expect(HttpMethod.Get, featureUrl)
+                .WithHeaders(Constants.Api.ApiKeyHeader, testApiKey)
+                .Respond("application/json", authResponseJson); // Respond with JSON
+
+        // Inject the handler or client into your application code
+        var client = mockHttp.ToHttpClient();
+        client.BaseAddress = baseUrl;
+
+        var sut = new FeatureFlagService(client);
+        var result = await sut.GetFeatureFlags(testApiKey);
 
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         Assert.True(result.IsAuthorized);
         Assert.True(string.IsNullOrEmpty(result.ErrorMessage));
-        Assert.True(features.All(x => result.Features.Contains(x)));
+        Assert.Equal(features.Count, result.Features.Count);
+        Assert.Equal(features.Select(x => x.Name), result.Features.Select(x => x.Name));
     }
 }
