@@ -22,7 +22,7 @@ public class FeatureAccessServiceTests : AuthResponseBuilder
     [Fact]
     public async Task RequestAccess_ValidRequest_ReturnsFeatureAccess()
     {
-        // Assign;
+        // Arrange
         List<FeatureFlag> features = FeatureFlagBuilder.CreateFeatures();
         AuthResponse authResponse = CreateAuthResponse(true, HttpStatusCode.OK, null, features);
 
@@ -49,7 +49,7 @@ public class FeatureAccessServiceTests : AuthResponseBuilder
     [Fact]
     public async Task RequestAccess_InvalidAPIKeyGiven_ReturnsNoAccessWithErrorMessage()
     {
-        // Assign;
+        // Arrange
         AuthResponse authResponse = CreateAuthResponse(false, HttpStatusCode.Unauthorized, "Invalid API key.", features: new());
         string apiKeyFake = "test-key";
 
@@ -72,7 +72,7 @@ public class FeatureAccessServiceTests : AuthResponseBuilder
     [Fact]
     public void HasAccess_UserIsNotAuthorized_ThrowsInvalidOperationError()
     {
-        // Assign
+        // Arrange
         string testFeatureName = "Test1-Feature";
         var featureFlagServiceMock = new Mock<IFeatureFlagService>();
         var featureAccessService = new FeatureAccessService(featureFlagServiceMock.Object);
@@ -84,7 +84,7 @@ public class FeatureAccessServiceTests : AuthResponseBuilder
     [Fact]
     public async Task HasAccess_EnabledFeatureIsFound_ReturnsTrue()
     {
-        // Assign
+        // Arrange
         string testFeatureName = "Test1-Feature";
         List<FeatureFlag> features = new() { new() { Name = testFeatureName } };
         AuthResponse authResponse = CreateAuthResponse(true, HttpStatusCode.OK, null, features);
@@ -110,7 +110,7 @@ public class FeatureAccessServiceTests : AuthResponseBuilder
     [Fact]
     public async Task HasAccess_NoEnabledFeatureFound_ReturnsFalse()
     {
-        // Assign
+        // Arrange
         string NonExistingFeatureName = "Non-existing-Feature";
         List<FeatureFlag> features = new(); // Empty featurelist
         AuthResponse authResponse = AuthResponseBuilder.CreateAuthResponse(true, HttpStatusCode.OK, null, features);
