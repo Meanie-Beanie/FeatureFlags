@@ -18,6 +18,9 @@ public class FeatureFlagService : IFeatureFlagService
 
     public async Task<AuthResponse> GetFeatureFlags(string apiKey)
     {
+        if (string.IsNullOrWhiteSpace(apiKey))
+            throw new ArgumentException("Api key is required.", nameof(apiKey));
+
         // We are using one HttpClient without DI (singleton) so we do not change the base properties of the httpclient
         // therefore we create HttpRequestMessage -class to wrap our specific needs and send it instead.
         HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Get, ApiRoutes.Features.Base);
