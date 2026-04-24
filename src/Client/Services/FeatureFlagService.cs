@@ -27,7 +27,7 @@ public class FeatureFlagService : IFeatureFlagService
         using HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Get, ApiRoutes.Features.Base);
         requestMessage.Headers.Add(Constants.Api.ApiKeyHeader, apiKey);
 
-        var response = await _client.SendAsync(requestMessage);
+        using var response = await _client.SendAsync(requestMessage);
         if (response.Content == null)
             throw new InvalidOperationException("Api response must contain a body.");
 
@@ -43,6 +43,10 @@ public class FeatureFlagService : IFeatureFlagService
 
         if (response.StatusCode == HttpStatusCode.Unauthorized)
             return new() { IsAuthorized = false, StatusCode = authResponse.StatusCode, ErrorMessage = authResponse.ErrorMessage };
+
+        // We'll throw an error if code is not 2xx. Why not sooner?
+        // We want to handle unauthorized -situation but if it is Bad Request or other error, throw.
+        response.EnsureSuccessStatusCode();
 
         return authResponse;
     }

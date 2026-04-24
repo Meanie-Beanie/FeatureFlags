@@ -77,6 +77,9 @@ public class FeatureFlagServiceTests
     [InlineData("null")]
     [InlineData("")]
     [InlineData("    ")]
+    [InlineData("not json")]
+    [InlineData("{\"isAuthorized\":true}")]
+    [InlineData("[]")]
     public async Task GetFeatureFlags_InvalidResponseBody_ThrowsInvalidOperationException(string jsonBody)
     {
         var baseUrl = new Uri("https://www.test.com");
