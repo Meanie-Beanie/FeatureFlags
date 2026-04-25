@@ -46,8 +46,33 @@ public class FeatureAccessServiceTests : AuthResponseBuilder
         featureFlagServiceMock.Verify(x => x.GetFeatureFlags(apiKeyFake), Times.Once());
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("    ")]
+    [InlineData(null)]
+    public async Task RequestAccess_InvalidAPIKeyGiven_ReturnsNoAccessWithErrorMessage(string apiKey)
+    {
+        // Arrange
+        AuthResponse authResponse = CreateAuthResponse(false, HttpStatusCode.Unauthorized, "Invalid API key.", features: new());
+
+        var featureFlagServiceMock = new Mock<IFeatureFlagService>();
+        featureFlagServiceMock.Setup(x => x.GetFeatureFlags(It.IsAny<string>()))
+                .ReturnsAsync(authResponse);
+
+        var featureAccessService = new FeatureAccessService(featureFlagServiceMock.Object);
+
+        // Act
+        var sut = await featureAccessService
+            .RequestAccessAsync(apiKey);
+
+        // Assert
+        Assert.False(sut.IsAuthorized);
+        featureFlagServiceMock.Verify(x => x.GetFeatureFlags(apiKey), Times.Once());
+        Assert.False(string.IsNullOrEmpty(sut.ErrorMessage)); // Not finalized
+    }
+
     [Fact]
-    public async Task RequestAccess_InvalidAPIKeyGiven_ReturnsNoAccessWithErrorMessage()
+    public async Task RequestAccess_NoServicesAssociatedWithApiKey_ReturnsNoAccessWithErrorMessage()
     {
         // Arrange
         AuthResponse authResponse = CreateAuthResponse(false, HttpStatusCode.Unauthorized, "Invalid API key.", features: new());

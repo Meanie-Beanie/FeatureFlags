@@ -27,6 +27,9 @@ public class FeatureAccessService : IFeatureAccessService
 
     public async Task<FeatureAccess> RequestAccessAsync(string apiKey)
     {
+        if (string.IsNullOrWhiteSpace(apiKey))
+            throw new ArgumentException("Api key cannot be null or empty." ,nameof(apiKey));
+
         var response = await _featureFlagService.GetFeatureFlags(apiKey);
 
         if (!response.IsAuthorized)
