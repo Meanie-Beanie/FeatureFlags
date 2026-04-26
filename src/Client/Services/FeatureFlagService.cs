@@ -28,26 +28,36 @@ public class FeatureFlagService : IFeatureFlagService
         requestMessage.Headers.Add(Constants.Api.ApiKeyHeader, apiKey);
 
         using var response = await _client.SendAsync(requestMessage);
-        if (response.Content == null)
-            throw new InvalidOperationException("Api response must contain a body.");
+
+        if (response.StatusCode == HttpStatusCode.Unauthorized)
+            return new() { IsAuthorized = false, StatusCode = response.StatusCode, ErrorMessage = "User is unauthorized."};
 
         var content = await response.Content.ReadAsStringAsync();
 
         if (string.IsNullOrWhiteSpace(content))
             throw new InvalidOperationException("Api response content body is empty.");
 
-        var authResponse = JsonSerializer.Deserialize<AuthResponse>(content);
+        try
+        {
+            var authResponse = JsonSerializer.Deserialize<AuthResponse>(content);
 
-        if (authResponse == null)
-            throw new InvalidOperationException("Api response body is null.");
+            if (authResponse == null)
+                throw new InvalidOperationException("Api response body is null.");
 
-        if (response.StatusCode == HttpStatusCode.Unauthorized)
-            return new() { IsAuthorized = false, StatusCode = authResponse.StatusCode, ErrorMessage = authResponse.ErrorMessage };
+            // We'll throw an error if code is not 2xx. Why not sooner?
+            // We want to handle unauthorized -situation but if it is Bad Request or other error, throw.
+            response.EnsureSuccessStatusCode();
 
-        // We'll throw an error if code is not 2xx. Why not sooner?
-        // We want to handle unauthorized -situation but if it is Bad Request or other error, throw.
-        response.EnsureSuccessStatusCode();
+            return authResponse;
+        }
 
-        return authResponse;
+        catch (JsonException  ex)
+        {
+                return new() {
+                    IsAuthorized = false,
+                    StatusCode = response.StatusCode,
+                    ErrorMessage = ex.Message
+                };
+        }
     }
 }

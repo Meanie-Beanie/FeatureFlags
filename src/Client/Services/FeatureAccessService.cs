@@ -10,7 +10,7 @@ public class FeatureAccessService : IFeatureAccessService
     private readonly IFeatureFlagService _featureFlagService;
 
     private List<string> EnabledFeatures = new();
-    private bool IsUserAuthorized = false;
+    public bool IsUserAuthorized { get; private set; } = false;
 
     public FeatureAccessService(IFeatureFlagService featureFlagService)
     {
@@ -37,7 +37,6 @@ public class FeatureAccessService : IFeatureAccessService
             UpdateUserFeatures(response.IsAuthorized, new());
             return new() { IsAuthorized = false, ErrorMessage = "Invalid API key." };
         }
-
 
         // Convert Feature list into simplified string list.
         var listOfFeatures = response.Features.Select(x => x.Name).ToList();
