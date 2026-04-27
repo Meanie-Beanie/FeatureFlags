@@ -16,12 +16,9 @@ public class FeedbackFeatureTests
     [Fact]
     public void CanUse_FeatureIsEnabled_ReturnsTrue()
     {
-        var feature = "feature1";
-        var features = new List<string>() { feature };
-
         var featureAccessMock = new Mock<IFeatureAccessService>();
         featureAccessMock.Setup(x => x.IsUserAuthorized).Returns(true);
-        featureAccessMock.Setup(x => x.HasFeature(feature)).Returns(true);
+        featureAccessMock.Setup(x => x.HasFeature(It.IsAny<string>())).Returns(true);
 
         var sut = new FeedbackFeature(featureAccessMock.Object);
 

@@ -95,7 +95,7 @@ public class FeatureAccessServiceTests : AuthResponseBuilder
     }
 
     [Fact]
-    public async Task HasAccess_EnabledFeatureIsFound_ReturnsTrue()
+    public async Task HasFeature_EnabledFeatureIsFound_ReturnsTrue()
     {
         // Arrange
         string testFeatureName = "Test1-Feature";
@@ -121,7 +121,7 @@ public class FeatureAccessServiceTests : AuthResponseBuilder
     }
 
     [Fact]
-    public async Task HasAccess_NoEnabledFeatureFound_ReturnsFalse()
+    public async Task HasFeature_NoEnabledFeatureFound_ReturnsFalse()
     {
         // Arrange
         string NonExistingFeatureName = "Non-existing-Feature";
@@ -143,6 +143,30 @@ public class FeatureAccessServiceTests : AuthResponseBuilder
 
         // Assert
         Assert.False(result);
+        featureFlagServiceMock.Verify(x => x.GetFeatureFlags(apiKeyFake), Times.Once());
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(null)]
+    [InlineData("  ")]
+    public async Task HasFeature_InvalidFeatureName_ThrowsInvalidArgumentException(string featureName)
+    {
+        // Setting it up due to the feature list being private so we will be calling it up to set it all up.
+        List<FeatureFlag> features = new() { new FeatureFlag() { Name = featureName } };
+        AuthResponse authResponse = AuthResponseBuilder.CreateAuthResponse(true, HttpStatusCode.OK, null, features);
+
+        string apiKeyFake = "test-key";
+
+        var featureFlagServiceMock = new Mock<IFeatureFlagService>();
+        featureFlagServiceMock.Setup(x => x.GetFeatureFlags(It.IsAny<string>()))
+                .ReturnsAsync(authResponse);
+
+        var featureAccessService = new FeatureAccessService(featureFlagServiceMock.Object);
+        await featureAccessService.RequestAccessAsync(apiKeyFake); //Authorizes the user and sets up the enabled features
+
+
+        Assert.Throws<ArgumentNullException>(() => featureAccessService.HasFeature(featureName));
         featureFlagServiceMock.Verify(x => x.GetFeatureFlags(apiKeyFake), Times.Once());
     }
 }

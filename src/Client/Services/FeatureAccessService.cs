@@ -22,6 +22,9 @@ public class FeatureAccessService : IFeatureAccessService
         if (!IsUserAuthorized)
             throw new InvalidOperationException("User is not authorized.");
 
+        if (string.IsNullOrWhiteSpace(featureName))
+            throw new ArgumentNullException("Feature name cannot be null or empty.", nameof(featureName));
+
         return EnabledFeatures.Contains(featureName);
     }
 

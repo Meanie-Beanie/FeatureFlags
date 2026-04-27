@@ -53,11 +53,7 @@ public class FeatureFlagService : IFeatureFlagService
 
         catch (JsonException  ex)
         {
-                return new() {
-                    IsAuthorized = false,
-                    StatusCode = response.StatusCode,
-                    ErrorMessage = ex.Message
-                };
+            throw new InvalidOperationException("Failed to deserialize Json response.", ex);
         }
     }
 }
