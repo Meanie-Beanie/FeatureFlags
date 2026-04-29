@@ -9,7 +9,11 @@ public class FeatureAccessService : IFeatureAccessService
 {
     private readonly IFeatureFlagService _featureFlagService;
 
-    private List<string> EnabledFeatures = new();
+    private List<string> _enabledFeatures = new();
+
+    // Due to it being unmutable collection, we'll just expose our internal storage through it.
+    public IReadOnlyList<string> EnabledFeatures => _enabledFeatures;
+
     public bool IsUserAuthorized { get; private set; } = false;
 
     public FeatureAccessService(IFeatureFlagService featureFlagService)
@@ -25,7 +29,7 @@ public class FeatureAccessService : IFeatureAccessService
         if (string.IsNullOrWhiteSpace(featureName))
             throw new ArgumentNullException("Feature name cannot be null or empty.", nameof(featureName));
 
-        return EnabledFeatures.Contains(featureName);
+        return _enabledFeatures.Contains(featureName);
     }
 
     public async Task<FeatureAccess> RequestAccessAsync(string apiKey)
@@ -58,6 +62,6 @@ public class FeatureAccessService : IFeatureAccessService
     private void UpdateUserFeatures(bool isAuthorized, List<string> enabledFeatures)
     {
         IsUserAuthorized = isAuthorized;
-        EnabledFeatures = enabledFeatures;
+        _enabledFeatures = enabledFeatures;
     }
 }

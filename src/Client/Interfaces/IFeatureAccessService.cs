@@ -10,4 +10,6 @@ public interface IFeatureAccessService
     public Task<FeatureAccess> RequestAccessAsync(string apiKey);
 
     public bool HasFeature(string featureName);
+
+    public IReadOnlyList<string> EnabledFeatures { get; }
 }
