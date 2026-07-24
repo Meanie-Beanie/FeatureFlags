@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 
 namespace Client.Services;
 
-public class FeatureFlagService : IFeatureFlagService
+public sealed class FeatureFlagService : IFeatureFlagService
 {
     private readonly HttpClient _client = new();
 

@@ -27,20 +27,20 @@ public class App
         while (true)
         {
             _userInterface.ShowMessage("Please enter your Api key. Press escape to quit.");
-            var input = _userInterface.GetInput();
+            var userApiKey = _userInterface.GetInput();
 
             /*
              * Note:
              * Currently ties implementation directly to ConsoleKey so abstraction is required at some point.
             */ 
-            if (input == ConsoleKey.Escape.ToString())
+            if (userApiKey == ConsoleKey.Escape.ToString())
                 return false;
 
             // Loop until user gives a correct key.
-            if (string.IsNullOrEmpty(input))
+            if (string.IsNullOrEmpty(userApiKey))
                 continue;
 
-            var userAuth = await _featureAccessService.RequestAccessAsync(input);
+            var userAuth = await _featureAccessService.RequestAvailableServicesAsync(userApiKey);
 
             if (!userAuth.IsAuthorized)
             {
@@ -70,20 +70,19 @@ public class App
             _userInterface.ShowMessage($"{i + 1}. {_featureAccessService.EnabledFeatures[i]}");
         }
 
+        _userInterface.ShowMessage("Select a feature from the list.");
+
         while (true)
         {
             if (int.TryParse(_userInterface.GetInput(), out var selection))
             {
                 if (selection > _featureAccessService.EnabledFeatures.Count + 1 && selection > 0)
                 {
-                    _userInterface.ShowMessage("Select a feature from the list.");
                     continue;
                 }
-
-                _featureAccessService.HasFeature(_featureAccessService.EnabledFeatures[selection]);
-
             }
         }
 
+        // S
     }
 }

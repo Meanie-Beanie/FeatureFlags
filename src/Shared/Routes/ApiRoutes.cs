@@ -21,10 +21,12 @@ Reasoning is that httpclient will use connection strings as parameter but attrib
 */
 public static class ApiRoutes
 {
+
+    // All gated features will be underneath api/features/{feature_name]. Idea is simple, these are specific features only available if the they have been unlocked for the user.
     public static class Features
     {
         public const string Base = "api/features";
-        // public static string GetFeature = Base + "/{id]";
 
+        public const string Feedback = Base + "/feedback";
     }
 }

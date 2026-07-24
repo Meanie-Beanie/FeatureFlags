@@ -7,7 +7,9 @@ public interface IFeatureAccessService
 {
     public bool IsUserAuthorized { get; }
 
-    public Task<FeatureAccess> RequestAccessAsync(string apiKey);
+    public string? ApiKey { get; }
+
+    public Task<FeatureAccess> RequestAvailableServicesAsync(string apiKey);
 
     public bool HasFeature(string featureName);
 

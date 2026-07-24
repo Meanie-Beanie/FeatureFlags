@@ -7,5 +7,5 @@ public class ConsoleInterface : IUserInterface
         => Console.ReadLine();
 
     public void ShowMessage(string? value)
-        => Console.Write(value);
+        => Console.WriteLine(value);
 }

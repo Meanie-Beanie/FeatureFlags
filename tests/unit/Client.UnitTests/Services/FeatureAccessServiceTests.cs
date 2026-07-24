@@ -36,7 +36,7 @@ public class FeatureAccessServiceTests : AuthResponseBuilder
 
         // Act
         var result = await featureAccessService
-            .RequestAccessAsync(apiKeyFake);
+            .RequestAvailableServicesAsync(apiKeyFake);
 
         // Assert
         Assert.NotNull(result.Features);
@@ -55,7 +55,7 @@ public class FeatureAccessServiceTests : AuthResponseBuilder
         var featureFlagServiceMock = new Mock<IFeatureFlagService>();
         var featureAccessService = new FeatureAccessService(featureFlagServiceMock.Object);
 
-        await Assert.ThrowsAsync<ArgumentException>(() => featureAccessService.RequestAccessAsync(apiKey));
+        await Assert.ThrowsAsync<ArgumentException>(() => featureAccessService.RequestAvailableServicesAsync(apiKey));
         featureFlagServiceMock.Verify(x => x.GetFeatureFlags(apiKey), Times.Never());
     }
 
@@ -74,7 +74,7 @@ public class FeatureAccessServiceTests : AuthResponseBuilder
 
         // Act
         var result = await featureAccessService
-            .RequestAccessAsync(apiKeyFake);
+            .RequestAvailableServicesAsync(apiKeyFake);
 
         // Assert
         Assert.False(result.IsAuthorized);
@@ -112,7 +112,7 @@ public class FeatureAccessServiceTests : AuthResponseBuilder
 
 
         // Act
-        await featureAccessService.RequestAccessAsync(apiKeyFake); //Authorizes the user and sets up the enabled features
+        await featureAccessService.RequestAvailableServicesAsync(apiKeyFake); //Authorizes the user and sets up the enabled features
         var result = featureAccessService.HasFeature(testFeatureName);
 
         // Assert
@@ -138,7 +138,7 @@ public class FeatureAccessServiceTests : AuthResponseBuilder
 
 
         // Act
-        await featureAccessService.RequestAccessAsync(apiKeyFake); //Authorizes the user and sets up the enabled features
+        await featureAccessService.RequestAvailableServicesAsync(apiKeyFake); //Authorizes the user and sets up the enabled features
         var result = featureAccessService.HasFeature(NonExistingFeatureName);
 
         // Assert
@@ -163,7 +163,7 @@ public class FeatureAccessServiceTests : AuthResponseBuilder
                 .ReturnsAsync(authResponse);
 
         var featureAccessService = new FeatureAccessService(featureFlagServiceMock.Object);
-        await featureAccessService.RequestAccessAsync(apiKeyFake); //Authorizes the user and sets up the enabled features
+        await featureAccessService.RequestAvailableServicesAsync(apiKeyFake); //Authorizes the user and sets up the enabled features
 
 
         Assert.Throws<ArgumentNullException>(() => featureAccessService.HasFeature(featureName));

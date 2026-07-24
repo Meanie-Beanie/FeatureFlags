@@ -8,4 +8,5 @@ namespace Client.Interfaces;
 public interface IFeature
 {
     public bool CanUse { get; }
+    Task<bool> ExecuteAsync(CancellationToken cancellationToken = default);
 }
