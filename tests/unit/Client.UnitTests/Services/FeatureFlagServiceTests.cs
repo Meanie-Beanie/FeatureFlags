@@ -71,6 +71,7 @@ public class FeatureFlagServiceTests
         var sut = new FeatureFlagService(client);
 
         await Assert.ThrowsAsync<ArgumentException>(() => sut.GetFeatureFlags(apiKey));
+        mockHttp.VerifyNoOutstandingExpectation();
     }
 
     [Theory]

@@ -17,14 +17,14 @@ using System.Xml.Linq;
 
 namespace Client.UnitTests.Services;
 
-public class FeatureAccessServiceTests : AuthResponseBuilder
+public class FeatureAccessServiceTests
 {
     [Fact]
     public async Task RequestAccess_ValidRequest_ReturnsFeatureAccess()
     {
         // Arrange
         List<FeatureFlag> features = FeatureFlagBuilder.CreateFeatures();
-        AuthResponse authResponse = CreateAuthResponse(true, HttpStatusCode.OK, null, features);
+        AuthResponse authResponse = AuthResponseBuilder.CreateAuthResponse(true, HttpStatusCode.OK, null, features);
 
         string apiKeyFake = "test-key";
 
@@ -63,7 +63,7 @@ public class FeatureAccessServiceTests : AuthResponseBuilder
     public async Task RequestAccess_NoServicesAssociatedWithApiKey_ReturnsNoAccessWithErrorMessage()
     {
         // Arrange
-        AuthResponse authResponse = CreateAuthResponse(false, HttpStatusCode.Unauthorized, "Invalid API key.", features: new());
+        AuthResponse authResponse = AuthResponseBuilder.CreateAuthResponse(false, HttpStatusCode.Unauthorized, "Invalid API key.", features: new());
         string apiKeyFake = "test-key";
 
         var featureFlagServiceMock = new Mock<IFeatureFlagService>();
@@ -100,7 +100,7 @@ public class FeatureAccessServiceTests : AuthResponseBuilder
         // Arrange
         string testFeatureName = "Test1-Feature";
         List<FeatureFlag> features = new() { new() { Name = testFeatureName } };
-        AuthResponse authResponse = CreateAuthResponse(true, HttpStatusCode.OK, null, features);
+        AuthResponse authResponse = AuthResponseBuilder.CreateAuthResponse(true, HttpStatusCode.OK, null, features);
 
         string apiKeyFake = "test-key";
 

@@ -15,7 +15,7 @@ public sealed class FeatureAccessService : IFeatureAccessService
 
     // Due to it being unmutable collection, we'll just expose our internal storage through it.
     public IReadOnlyList<string> EnabledFeatures => _enabledFeatures;
-
+        
     public bool IsUserAuthorized { get; private set; } = false;
 
     public FeatureAccessService(IFeatureFlagService featureFlagService)
