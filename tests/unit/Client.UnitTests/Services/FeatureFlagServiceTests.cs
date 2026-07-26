@@ -59,19 +59,12 @@ public class FeatureFlagServiceTests
         var authResponseJson = AuthResponseBuilder.CreateJsonAuthResponse(IsAuthorized: true, statusCode: HttpStatusCode.OK,
             errorMessage: null, features: features);
 
-        var mockHttp = new MockHttpMessageHandler();
+        var mockHttp = new Mock<HttpClient>();
 
-        mockHttp.Expect(HttpMethod.Get, featureUrl)
-                .WithHeaders(Constants.Api.ApiKeyHeader, apiKey)
-                .Respond("application/json", authResponseJson); // Respond with JSON
-
-        var client = mockHttp.ToHttpClient();
-        client.BaseAddress = baseUrl;
-
-        var sut = new FeatureFlagService(client);
+        var sut = new FeatureFlagService(mockHttp.Object);
 
         await Assert.ThrowsAsync<ArgumentException>(() => sut.GetFeatureFlags(apiKey));
-        mockHttp.VerifyNoOutstandingExpectation();
+        mockHttp.VerifyNoOtherCalls();
     }
 
     [Theory]
