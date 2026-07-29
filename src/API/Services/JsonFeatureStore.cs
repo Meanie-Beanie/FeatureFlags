@@ -11,6 +11,9 @@ public class JsonFeatureStore
 
     public JsonFeatureStore(string filepath)
     {
+        if (string.IsNullOrWhiteSpace(filepath))
+            throw new ArgumentException($"File path cannot be empty or null." + nameof(filepath));
+
         _filepath = filepath;
     }
 
@@ -20,7 +23,34 @@ public class JsonFeatureStore
             throw new ArgumentException($"Api key provided cannot be empty. {nameof(apiKey)}");
 
         var json = File.ReadAllText(_filepath);
-        var entries = JsonSerializer.Deserialize<List<UserFeatures>>(json)?.ToDictionary(x => x.ApiKey, y => y.Features);
+
+        Dictionary<string, List<FeatureFlag>> entries = new();
+
+        try
+        {           
+            var userFeatures = JsonSerializer.Deserialize<List<UserFeatures>>(json);
+
+            if (userFeatures == null)
+                throw new InvalidOperationException($"Provided JSON cannot be empty.");
+
+            entries = userFeatures.ToDictionary(x => x.ApiKey, y => y.Features);
+        }
+
+        catch (JsonException ex)
+        {
+            throw new InvalidOperationException("Failed to deserialize Json.", ex);
+        }
+
+        catch (InvalidOperationException ex)
+        {
+            throw new InvalidOperationException($"Given Json is empty." + ex);
+        }
+
+        catch (Exception ex)
+        {
+            throw new Exception("Something went wrong." + ex);
+        }
+
 
         if (entries == null || entries.Count == 0)
             throw new InvalidOperationException("");

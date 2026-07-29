@@ -57,11 +57,46 @@ public class JsonFeatureFlagStoreTests : IDisposable
 
     [Theory]
     [InlineData("")]
+    [InlineData("{}")]
+    public void GetFeatures_EmptyJsonFileProvided_ThrowsException(string jsonFile)
+    {
+        string apiKey = "123-test-key";
+
+        File.WriteAllText(_filepath, jsonFile);
+
+        var SUT = new JsonFeatureStore(_filepath);
+
+        Assert.Throws<InvalidOperationException>(() => SUT.GetFeatures(apiKey));
+    }
+
+    [Fact]
+    public void GetFeatures_CorrectApiKeyProvidedButUserHasNoFeatures_ReturnsUserFeaturesWithNoFeatures()
+    {
+        string apiKey = "123-test-key";
+
+        var SUT = CreateJsonFeatureStore(apiKey, new());
+        var result = SUT.GetFeatures(apiKey);
+
+        Assert.Equal(apiKey, result.ApiKey);
+        Assert.True(result.Features.Count == 0);
+    }
+
+    [Theory]
+    [InlineData("")]
     [InlineData(null)]
     [InlineData("  ")]
     public void GetFeatures_InvalidApiKeyProvided_ThrowArgumentException(string apiKey)
     {
         var SUT = CreateJsonFeatureStore(apiKey, new());
         Assert.Throws<ArgumentException>(() => SUT.GetFeatures(apiKey));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(null)]
+    [InlineData("  ")]
+    public void GetFeatures_InvalidPathProvided_ThrowArgumentException(string path)
+    {
+        Assert.Throws<ArgumentException>(() => new JsonFeatureStore(path));
     }
 }
