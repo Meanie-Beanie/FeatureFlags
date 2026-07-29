@@ -21,7 +21,9 @@ public class JsonFeatureFlagStoreTests : IDisposable
     private JsonFeatureStore CreateJsonFeatureStore(string apiKey, List<FeatureFlag> features)
     {
         UserFeatures userFeatures = new(apiKey, features);
-        var json = JsonSerializer.Serialize(userFeatures);
+
+        // Since it contains multiple listings for users features, we have to have it in list format or JSON will not be correct.
+        var json = JsonSerializer.Serialize(new List<UserFeatures>(){ userFeatures});
 
         File.WriteAllText(_filepath, json);
 
@@ -38,7 +40,7 @@ public class JsonFeatureFlagStoreTests : IDisposable
     }
 
     [Fact]
-    public void GetFeatures_GetsFeaturesForTheApiKey_ReturnsFeatures()
+    public void GetFeatures_CorrectApiKeyProvided_ReturnsUserFeatures()
     {
         string apiKey = "123-test-key";
         FeatureFlag feature1 = new() { Name = "feature1" };
@@ -48,7 +50,18 @@ public class JsonFeatureFlagStoreTests : IDisposable
         var result = SUT.GetFeatures(apiKey);
 
         Assert.Equal(apiKey, result.ApiKey);
-        Assert.Distinct(result.Features);
+        Assert.True(result.Features.FirstOrDefault(x => x.Name == feature1.Name) != null); // Lazy way to ensure both are present.
+        Assert.True(result.Features.FirstOrDefault(x => x.Name == feature2.Name) != null); // Lazy way to ensure both are present.
         Assert.True(result.Features.Count > 0);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(null)]
+    [InlineData("  ")]
+    public void GetFeatures_InvalidApiKeyProvided_ThrowArgumentException(string apiKey)
+    {
+        var SUT = CreateJsonFeatureStore(apiKey, new());
+        Assert.Throws<ArgumentException>(() => SUT.GetFeatures(apiKey));
     }
 }
