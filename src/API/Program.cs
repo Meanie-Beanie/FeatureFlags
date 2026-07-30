@@ -1,5 +1,5 @@
 using API.Interfaces;
-using API.UnitTests.Services;
+using API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +11,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddTransient<IFeatureStore, JsonFeatureStore>();
+builder.Services.AddTransient<IFeedbackService, FeedbackService>();
 
 var app = builder.Build();
 

@@ -1,10 +1,9 @@
-﻿
-using API.Entities;
+﻿using API.Entities;
 using API.Interfaces;
 using Shared.Contracts;
 using System.Text.Json;
 
-namespace API.UnitTests.Services;
+namespace API.Services;
 
 public sealed class JsonFeatureStore : IFeatureStore
 {
@@ -68,5 +67,13 @@ public sealed class JsonFeatureStore : IFeatureStore
         {
             throw new InvalidOperationException($"Api key provided is not found. {nameof(apiKey)}");
         }
+    }
+
+    public bool HasFeature(string apiKey, string featureName)
+    {
+        var userFeatures = GetFeatures(apiKey);
+
+        // If it contains feature, return true.
+        return userFeatures.Features.Any(x => x.Name == featureName);
     }
 }

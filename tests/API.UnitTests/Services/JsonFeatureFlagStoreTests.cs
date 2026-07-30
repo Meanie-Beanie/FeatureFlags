@@ -1,4 +1,5 @@
 ﻿using API.Entities;
+using API.Services;
 using Shared.Contracts;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ namespace API.UnitTests.Services;
 
 public class JsonFeatureFlagStoreTests : IDisposable
 {
-    private readonly string _filepath = Path.Combine(Path.GetTempPath(), "test-feature-flag.json");
+    private readonly string _filepath = Path.Combine(Path.GetTempPath(), "feature-flag.json");
     /*
      * We create the 
     */
@@ -98,5 +99,33 @@ public class JsonFeatureFlagStoreTests : IDisposable
     public void GetFeatures_InvalidPathProvided_ThrowArgumentException(string path)
     {
         Assert.Throws<ArgumentException>(() => new JsonFeatureStore(path));
+    }
+
+    [Fact]
+    public void HasFeature_UserHasAccessToFeature_ReturnTrue()
+    {
+        string apiKey = "123-test-key";
+        FeatureFlag feature1 = new() { Name = "feature1" };
+        FeatureFlag feature2 = new() { Name = "feature2" };
+
+        var SUT = CreateJsonFeatureStore(apiKey, [feature1, feature2]);
+        var result = SUT.HasFeature(apiKey, feature2.Name);
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void HasFeature_UserNoAccessToFeature_ReturnFalse()
+    {
+        string apiKey = "123-test-key";
+        string fakeFeature = "fake-feature";
+
+        FeatureFlag feature1 = new() { Name = "feature1" };
+        FeatureFlag feature2 = new() { Name = "feature2" };
+
+        var SUT = CreateJsonFeatureStore(apiKey, [feature1, feature2]);
+        var result = SUT.HasFeature(apiKey, fakeFeature);
+
+        Assert.False(result);
     }
 }
