@@ -13,6 +13,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
+	
+    <ItemGroup>
+      <InternalsVisibleTo Include="API.IntegrationTests" />
+    </ItemGroup>
 
   <ItemGroup>
     <Content Update="Data\Features.json">
