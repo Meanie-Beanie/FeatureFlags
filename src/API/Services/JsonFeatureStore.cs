@@ -1,11 +1,12 @@
 ﻿
 using API.Entities;
+using API.Interfaces;
 using Shared.Contracts;
 using System.Text.Json;
 
 namespace API.UnitTests.Services;
 
-public class JsonFeatureStore
+public sealed class JsonFeatureStore : IFeatureStore
 {
     private string _filepath;
 

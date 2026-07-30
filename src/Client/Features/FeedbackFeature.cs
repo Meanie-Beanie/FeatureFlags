@@ -1,5 +1,6 @@
 ﻿using Client.Interfaces;
 using Client.Services;
+using Shared;
 using Shared.Contracts;
 using Shared.Features;
 using Shared.Routes;

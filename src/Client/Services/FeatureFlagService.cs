@@ -1,4 +1,5 @@
 ﻿using Client.Interfaces;
+using Shared;
 using Shared.Responses;
 using Shared.Routes;
 using System.Net;

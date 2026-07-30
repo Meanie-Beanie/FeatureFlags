@@ -3,6 +3,7 @@ using Client.Services;
 using Client.UnitTests.TestUtils;
 using Moq;
 using RichardSzalay.MockHttp;
+using Shared;
 using Shared.Contracts;
 using Shared.Responses;
 using Shared.Routes;

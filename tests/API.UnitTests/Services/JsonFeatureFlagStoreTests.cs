@@ -58,7 +58,7 @@ public class JsonFeatureFlagStoreTests : IDisposable
     [Theory]
     [InlineData("")]
     [InlineData("{}")]
-    public void GetFeatures_EmptyJsonFileProvided_ThrowsException(string jsonFile)
+    public void GetFeatures_EmptyJsonFileProvided_ThrowsInvalidOperationException(string jsonFile)
     {
         string apiKey = "123-test-key";
 
