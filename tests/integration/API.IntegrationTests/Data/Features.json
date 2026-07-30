@@ -1,0 +1,14 @@
+﻿[
+  {
+    {
+      "ApiKey": "123-this-is-my-api-key",
+      "Features": [
+        {
+          "Name": "Send_Feedback"
+        }
+      ]
+    },
+    "ApiKey": "123-this-is-my-api-key",
+    "Features": []
+  }
+]

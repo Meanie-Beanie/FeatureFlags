@@ -24,16 +24,15 @@ public sealed class JsonFeatureStore : IFeatureStore
 
         var json = File.ReadAllText(_filepath);
 
-        Dictionary<string, List<FeatureFlag>> entries = new();
+        List<UserFeatures>? userFeatures;
 
         try
         {           
-            var userFeatures = JsonSerializer.Deserialize<List<UserFeatures>>(json);
+            userFeatures = JsonSerializer.Deserialize<List<UserFeatures>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-            if (userFeatures == null)
+            if (userFeatures == null || userFeatures.Count == 0)
                 throw new InvalidOperationException($"Provided JSON cannot be empty.");
 
-            entries = userFeatures.ToDictionary(x => x.ApiKey, y => y.Features);
         }
 
         catch (JsonException ex)
@@ -41,16 +40,21 @@ public sealed class JsonFeatureStore : IFeatureStore
             throw new InvalidOperationException("Failed to deserialize Json.", ex);
         }
 
-        catch (InvalidOperationException ex)
+
+        Dictionary<string, List<FeatureFlag>> entries = new();
+
+        try
         {
-            throw new InvalidOperationException($"Given Json is empty." + ex);
+            entries = userFeatures.ToDictionary(x => x.ApiKey, y => y.Features);
         }
 
-        catch (Exception ex)
+        catch (ArgumentException)
         {
-            throw new Exception("Something went wrong." + ex);
+            // We'd log it here.
+            throw;
         }
 
+        entries = userFeatures.ToDictionary(x => x.ApiKey, y => y.Features);
 
         if (entries == null || entries.Count == 0)
             throw new InvalidOperationException("");

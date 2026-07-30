@@ -10,7 +10,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddTransient<IFeatureStore, JsonFeatureStore>();
+builder.Services.AddTransient<IFeatureStore>(sp => new JsonFeatureStore(Path.Combine(AppContext.BaseDirectory, "Data", "Features.json")));
+
 builder.Services.AddTransient<IFeedbackService, FeedbackService>();
 
 var app = builder.Build();
