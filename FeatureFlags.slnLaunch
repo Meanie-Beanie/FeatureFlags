@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "Launch Projects",
+    "Projects": [
+      {
+        "Path": "src\\API\\API.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "src\\Client\\Client.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

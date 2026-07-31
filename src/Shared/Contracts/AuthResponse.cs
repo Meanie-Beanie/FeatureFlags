@@ -12,11 +12,11 @@ namespace Shared.Responses;
 public sealed class AuthResponse
 {
     [JsonRequired]
-    public bool IsAuthorized { get; set; }
+    public bool IsAuthorized { get; set; } = false;
     [JsonRequired]
     public HttpStatusCode StatusCode { get; set; }
     [JsonRequired]
-    public string? ErrorMessage { get; set; }
+    public string? ErrorMessage { get; set; } = "";
 
     [JsonRequired]
     public List<FeatureFlag> Features { get; set; } = new();

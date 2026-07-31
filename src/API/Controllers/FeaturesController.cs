@@ -21,10 +21,15 @@ public class FeaturesController : ControllerBase
 
         // Note: we add a dash in front to ensure it is considered an absolute path. Otherwise it would inherit the  controller route in front of it.
     [HttpGet($"/{ApiRoutes.Features.Base}", Name = ApiRoutes.Features.Base)]
-    public IActionResult Get([FromHeader(Name = Shared.Constants.Api.ApiKeyHeader)] string apiKey)
+    public IActionResult Get([FromHeader(Name = Shared.Constants.Api.ApiKeyHeader)] string? apiKey)
     {
         if (string.IsNullOrWhiteSpace(apiKey))
-            return Unauthorized("Provided Api key cannot be empty or null.");
+            return Unauthorized(new AuthResponse
+            {
+                StatusCode = HttpStatusCode.Unauthorized,
+                ErrorMessage = "Api key cannot be null.",
+                IsAuthorized = false
+            });
 
         try
         {
@@ -60,7 +65,7 @@ public class FeaturesController : ControllerBase
 
     // Note: we add a dash in front to ensure it is considered an absolute path. Otherwise it would inherit the  controller route in front of it.
     [HttpPost($"/{ApiRoutes.Features.Feedback}", Name = ApiRoutes.Features.Feedback)]
-    public IActionResult PostFeedback([FromHeader(Name = Shared.Constants.Api.ApiKeyHeader)] string apiKey, string message)
+    public IActionResult PostFeedback([FromHeader(Name = Shared.Constants.Api.ApiKeyHeader)] string? apiKey, [FromBody]string? message)
     {
         if (string.IsNullOrWhiteSpace(apiKey))
         {
@@ -72,11 +77,11 @@ public class FeaturesController : ControllerBase
         }
 
 
-        if (string.IsNullOrEmpty(message))
+        if (string.IsNullOrWhiteSpace(message))
         {
-            return Unauthorized(new AuthResponse
+            return BadRequest(new AuthResponse
             {
-                StatusCode = HttpStatusCode.Unauthorized,
+                StatusCode = HttpStatusCode.BadRequest,
                 ErrorMessage = "Feedback message cannot be null or empty.",
                 IsAuthorized = false
             });

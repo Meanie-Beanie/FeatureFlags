@@ -6,10 +6,12 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
 using Microsoft.VisualStudio.TestPlatform.TestHost;
 using Shared;
 using Shared.Contracts;
 using Shared.Features;
+using Shared.Responses;
 using Shared.Routes;
 using System;
 using System.Collections.Generic;
@@ -66,7 +68,7 @@ public class FeaturesControllerTests : IClassFixture<WebApplicationFactory<Progr
     }
 
     [Fact]
-    public async Task Get_CorrectApiKeyAsHeader_ReturnsOkwithUserFeature()
+    public async Task Get_CorrectApiKeyAsHeader_ReturnsOkwithAuthResponse()
     {
         string apiKey = "123-test-key";
         FeatureFlag feature1 = new() { Name = FeatureKeys.SendFeedback };
@@ -84,5 +86,132 @@ public class FeaturesControllerTests : IClassFixture<WebApplicationFactory<Progr
         Assert.Equal(feature1.Name, feature.Name);
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("  ")]
+    [InlineData(null)]
+    public async Task Get_InvalidApiKeyAsHeader_ReturnsUnauthorizedWithAuthResponse(string apiKey)
+    {
+        FeatureFlag feature1 = new() { Name = FeatureKeys.SendFeedback };
+        CreateJsonFile(apiKey, [feature1]);
 
+        var request = new HttpRequestMessage(HttpMethod.Get, ApiRoutes.Features.Base);
+        request.Headers.Add(Constants.Api.ApiKeyHeader, apiKey);
+
+        HttpResponseMessage response = await _httpClient.SendAsync(request);
+        var raw = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        var authResp = await response.Content.ReadFromJsonAsync<AuthResponse>();
+        Assert.NotNull(authResp);
+        Assert.False(authResp.IsAuthorized);
+        Assert.Empty(authResp.Features);
+    }
+
+    [Fact]
+    public async Task Get_ApiKeyNotFound_ReturnsNotAuthorizedWithAuthResponse()
+    {
+        string apiKey = "123-test-key";
+        string nonExistingKey = "I-am-not-real";
+        FeatureFlag feature1 = new() { Name = FeatureKeys.SendFeedback };
+        CreateJsonFile(apiKey, [feature1]);
+
+        var request = new HttpRequestMessage(HttpMethod.Get, ApiRoutes.Features.Base);
+        request.Headers.Add(Constants.Api.ApiKeyHeader, nonExistingKey);
+
+        HttpResponseMessage response = await _httpClient.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        var authResp = await response.Content.ReadFromJsonAsync<AuthResponse>();
+        Assert.NotNull(authResp);
+        Assert.False(authResp.IsAuthorized);
+        Assert.Empty(authResp.Features);
+    }
+
+    [Fact]
+    public async Task SendFeedback_ValidRequest_ReturnsOk()
+    {
+        string apiKey = "123-test-key";
+        string message = "Test Message";
+        FeatureFlag feature1 = new() { Name = FeatureKeys.SendFeedback };
+        CreateJsonFile(apiKey, [feature1]);
+
+        var request = new HttpRequestMessage(HttpMethod.Post, ApiRoutes.Features.Feedback);
+        request.Content = JsonContent.Create(message);
+        request.Headers.Add(Constants.Api.ApiKeyHeader, apiKey);
+
+        HttpResponseMessage response = await _httpClient.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("  ")]
+    [InlineData(null)]
+    public async Task SendFeedback_InvalidApiKey_ReturnsUnauthorizedWithAuthResponse(string apiKey)
+    {
+        string message = "test message";
+        FeatureFlag feature1 = new() { Name = FeatureKeys.SendFeedback };
+        CreateJsonFile(apiKey, [feature1]);
+
+        var request = new HttpRequestMessage(HttpMethod.Post, ApiRoutes.Features.Feedback);
+        request.Content = JsonContent.Create(message);
+        request.Headers.Add(Constants.Api.ApiKeyHeader, apiKey);
+
+        HttpResponseMessage response = await _httpClient.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        var authResp = await response.Content.ReadFromJsonAsync<AuthResponse>();
+        Assert.NotNull(authResp);
+        Assert.False(authResp.IsAuthorized);
+        Assert.Empty(authResp.Features);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("  ")]
+    [InlineData(null)]
+    public async Task SendFeedback_InvalidMessageAttached_ReturnsBadRequestWithAuthResponse(string message)
+    {
+        string apiKey = "123-test-key";
+        FeatureFlag feature1 = new() { Name = FeatureKeys.SendFeedback };
+        CreateJsonFile(apiKey, [feature1]);
+
+        var request = new HttpRequestMessage(HttpMethod.Post, ApiRoutes.Features.Feedback);
+        request.Content = JsonContent.Create(message);
+        request.Headers.Add(Constants.Api.ApiKeyHeader, apiKey);
+
+        HttpResponseMessage response = await _httpClient.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var authResp = await response.Content.ReadFromJsonAsync<AuthResponse>();
+        Assert.NotNull(authResp);
+        Assert.False(authResp.IsAuthorized);
+        Assert.Empty(authResp.Features);
+    }
+
+    [Fact]
+    public async Task SendFeedback_ApiKeyNotFound_ReturnsUnauthorizedWithAuthResponse()
+    {
+        string apiKey = "123-test-key";
+        string nonExistingKey = "5567-not-existing";
+        string message = "test message";
+
+        FeatureFlag feature1 = new() { Name = FeatureKeys.SendFeedback };
+        CreateJsonFile(apiKey, [feature1]);
+
+
+        var request = new HttpRequestMessage(HttpMethod.Post, ApiRoutes.Features.Feedback);
+        request.Content = JsonContent.Create(message);
+        request.Headers.Add(Constants.Api.ApiKeyHeader, nonExistingKey);
+
+        HttpResponseMessage response = await _httpClient.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        var authResp = await response.Content.ReadFromJsonAsync<AuthResponse>();
+        Assert.NotNull(authResp);
+        Assert.False(authResp.IsAuthorized);
+        Assert.Empty(authResp.Features);
+    }
 }

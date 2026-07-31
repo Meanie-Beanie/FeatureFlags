@@ -1,6 +1,6 @@
 ﻿[
   {
-    "ApiKey": "123-this-is-my-api-key",
+    "ApiKey": "123",
     "Features": [
       {
         "Name": "Send_Feedback"
@@ -8,7 +8,7 @@
     ]
   },
   {
-    "ApiKey": "123-this-is-my-api-key",
+    "ApiKey": "567",
     "Features": []
   }
 ]

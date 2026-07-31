@@ -40,7 +40,7 @@ public sealed class FeatureFlagService : IFeatureFlagService
 
         try
         {
-            var authResponse = JsonSerializer.Deserialize<AuthResponse>(content);
+            var authResponse = JsonSerializer.Deserialize<AuthResponse>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             if (authResponse == null)
                 throw new InvalidOperationException("Api response body is null.");

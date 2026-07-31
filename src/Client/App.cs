@@ -1,4 +1,5 @@
-﻿using Client.Interfaces;
+﻿using Client.Features;
+using Client.Interfaces;
 
 namespace Client;
 
@@ -6,6 +7,9 @@ public class App
 {
     private readonly IUserInterface _userInterface;
     private readonly IFeatureAccessService _featureAccessService;
+    
+    // This will be gone later.
+    private readonly HttpClient _httpClient = new HttpClient { BaseAddress = new Uri("https://localhost:7078")};
 
     public App(IUserInterface console, IFeatureAccessService featureAccessService)
     {
@@ -16,10 +20,25 @@ public class App
     public async Task<int> RunAsync()
     {
         var isAuthenticated = await AuthenticateAsync();
-        
-        SelectFeature();
 
-        return 0;
+        if (_featureAccessService.EnabledFeatures.Count == 0)
+        {
+            _userInterface.ShowMessage("User has no access to services. Please, contact customer service.");
+            _userInterface.GetInput();
+            return 0;
+        }    
+        
+        while (true)
+        {
+            await SelectFeature();
+            _userInterface.ShowMessage("Press any key to continue or  0 to shut down.");
+            
+            if(int.TryParse(_userInterface.GetInput(), out var input))
+            {
+                if (input == 0)
+                    return 0;
+            }
+        }
     }
 
     private async Task<bool> AuthenticateAsync()
@@ -61,7 +80,7 @@ public class App
      * It would be so easy to overload HasFeature -method by doing a system that checks it via id's
      * but I foolish went against my own better judgement.
     */
-    private void SelectFeature()
+    private async Task SelectFeature()
     {
         _userInterface.ShowMessage("Select one of the following features by pressing a number:");
 
@@ -80,9 +99,11 @@ public class App
                 {
                     continue;
                 }
+
+                // We are simply going to manually launch it because I FORGOT to apply this feature. It works for a prototyping though.
+                FeedbackFeature feedbackFeature = new(_featureAccessService, _userInterface, _httpClient);
+                await feedbackFeature.ExecuteAsync();
             }
         }
-
-        // S
     }
 }

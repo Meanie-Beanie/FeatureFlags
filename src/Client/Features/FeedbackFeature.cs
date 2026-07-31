@@ -36,13 +36,11 @@ public sealed class FeedbackFeature : FeatureBase
             return false;
         }
 
-        FeedbackRequest feedbackRequest = new FeedbackRequest() { Message = feedback };
-
         try
         {
             using HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Post, ApiRoutes.Features.Feedback)
             {
-                Content = JsonContent.Create(feedbackRequest)
+                Content = JsonContent.Create(feedback)
             };
             requestMessage.Headers.Add(Constants.Api.ApiKeyHeader, _featureAccessService.ApiKey);
 

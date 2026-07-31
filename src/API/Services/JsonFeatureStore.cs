@@ -54,23 +54,15 @@ public sealed class JsonFeatureStore : IFeatureStore
             throw;
         }
 
-        entries = userFeatures.ToDictionary(x => x.ApiKey, y => y.Features);
-
         if (entries == null || entries.Count == 0)
             throw new InvalidOperationException("");
+        
+        // If key does not exist, throw exception
+        if (!entries.TryGetValue(apiKey, out var features))
+            throw new KeyNotFoundException($"Api key provided is not found. {nameof(apiKey)}");
 
-        try
-        {
-            entries.TryGetValue(apiKey, out var features);
-
-            // In case features are empty, we'll just return empty list of features.
-            return new UserFeatures(apiKey, features ?? new());
-        }
-
-        catch (KeyNotFoundException ex)
-        {
-            throw new InvalidOperationException($"Api key provided is not found. {nameof(apiKey)}");
-        }
+        else
+            return new(apiKey, entries[apiKey]);
     }
 
     public bool HasFeature(string apiKey, string featureName)
