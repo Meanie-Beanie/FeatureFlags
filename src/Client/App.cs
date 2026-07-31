@@ -103,6 +103,8 @@ public class App
                 // We are simply going to manually launch it because I FORGOT to apply this feature. It works for a prototyping though.
                 FeedbackFeature feedbackFeature = new(_featureAccessService, _userInterface, _httpClient);
                 await feedbackFeature.ExecuteAsync();
+
+                break;
             }
         }
     }
