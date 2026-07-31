@@ -1,7 +1,9 @@
 using API.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Features;
+using Shared.Responses;
 using Shared.Routes;
+using System.Net;
 namespace API.Controllers;
 
 [ApiController]
@@ -18,7 +20,7 @@ public class FeaturesController : ControllerBase
     }
 
         // Note: we add a dash in front to ensure it is considered an absolute path. Otherwise it would inherit the  controller route in front of it.
-    [HttpGet(Name = $"/{ApiRoutes.Features.Base}")]
+    [HttpGet($"/{ApiRoutes.Features.Base}", Name = ApiRoutes.Features.Base)]
     public IActionResult Get([FromHeader(Name = Shared.Constants.Api.ApiKeyHeader)] string apiKey)
     {
         if (string.IsNullOrWhiteSpace(apiKey))
@@ -26,32 +28,60 @@ public class FeaturesController : ControllerBase
 
         try
         {
-
             var result = _featureStore.GetFeatures(apiKey);
 
-            return Ok(result);
+            return Ok(new AuthResponse
+            {
+                StatusCode = HttpStatusCode.OK,
+                IsAuthorized = true,
+                Features = result.Features
+            });
         }
 
         catch (KeyNotFoundException e)
         {
-            return Unauthorized("Provided Api key services were not found.");
+            return Unauthorized(new AuthResponse { 
+                StatusCode = HttpStatusCode.Unauthorized,
+                ErrorMessage = "Provided Api key services were not found.",
+                IsAuthorized = false
+            });
         }
 
-        catch (Exception e)
+        catch (Exception)
         {
-            return BadRequest();
+            return BadRequest(new AuthResponse
+            {
+                StatusCode = HttpStatusCode.BadRequest,
+                ErrorMessage = "Something went wrong.",
+                IsAuthorized = false
+            });
         }
     }
 
     // Note: we add a dash in front to ensure it is considered an absolute path. Otherwise it would inherit the  controller route in front of it.
-    [HttpPost(Name = $"/{ApiRoutes.Features.Feedback}")]
+    [HttpPost($"/{ApiRoutes.Features.Feedback}", Name = ApiRoutes.Features.Feedback)]
     public IActionResult PostFeedback([FromHeader(Name = Shared.Constants.Api.ApiKeyHeader)] string apiKey, string message)
     {
         if (string.IsNullOrWhiteSpace(apiKey))
-            return Unauthorized("Provided Api key cannot be empty or null.");
+        {
+            return Unauthorized(new AuthResponse { 
+                StatusCode = HttpStatusCode.Unauthorized,
+                ErrorMessage = "Provided Api key cannot be empty or null.",
+                IsAuthorized = false
+            });
+        }
+
 
         if (string.IsNullOrEmpty(message))
-            return BadRequest("Message cannot be empty");
+        {
+            return Unauthorized(new AuthResponse
+            {
+                StatusCode = HttpStatusCode.Unauthorized,
+                ErrorMessage = "Feedback message cannot be null or empty.",
+                IsAuthorized = false
+            });
+        }
+
 
         try
         {
@@ -63,15 +93,27 @@ public class FeaturesController : ControllerBase
             }
 
             else
-                return Unauthorized();
+            {
+                return Unauthorized(new AuthResponse
+                {
+                    StatusCode = HttpStatusCode.Unauthorized,
+                    ErrorMessage = "Api key has no right to send feedback.",
+                    IsAuthorized = false
+                });
+            }
         }
 
         catch (KeyNotFoundException e)
         {
-            return Unauthorized("Provided Api key services were not found.");
+            return Unauthorized(new AuthResponse
+            {
+                StatusCode = HttpStatusCode.Unauthorized,
+                ErrorMessage = "Provided Api key services were not found.",
+                IsAuthorized = false
+            });
         }
 
-        catch (Exception e)
+        catch (Exception)
         {
             return BadRequest();
         }

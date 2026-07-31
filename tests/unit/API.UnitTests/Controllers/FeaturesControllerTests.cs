@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Shared.Contracts;
+using Shared.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,7 +39,7 @@ public class FeaturesControllerTests
 
         // We need the OkObjectResult type to access values, we'll assert it at the same time.
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var body = Assert.IsType<UserFeatures>(okResult.Value);
+        var body = Assert.IsType<AuthResponse>(okResult.Value);
         Assert.Contains(feature1, body.Features);
         Assert.Contains(feature2, body.Features);
     }
@@ -97,7 +98,7 @@ public class FeaturesControllerTests
         var result = controller.Get(apiKey);
 
         // We need the OkObjectResult type to access values, we'll assert it at the same time.
-        var badRequestResult = Assert.IsType<BadRequestResult>(result);
+        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
     }
 
     [Fact]
@@ -179,7 +180,7 @@ public class FeaturesControllerTests
         var result = controller.PostFeedback(apiKey, message);
 
         // We need the OkObjectResult type to access values, we'll assert it at the same time.
-        var okResult = Assert.IsType<UnauthorizedResult>(result);
+        var okResult = Assert.IsType<UnauthorizedObjectResult>(result);
     }
 }
 

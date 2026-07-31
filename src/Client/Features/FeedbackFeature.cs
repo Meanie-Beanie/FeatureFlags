@@ -58,7 +58,7 @@ public sealed class FeedbackFeature : FeatureBase
             return true;
         }
 
-        catch (HttpRequestException ex)
+        catch (HttpRequestException)
         {
             _UI.ShowMessage("Unable to send feedback");
             return false;
